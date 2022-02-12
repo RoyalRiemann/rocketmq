@@ -52,6 +52,8 @@ public class Consumer {
         // Uncomment the following line while debugging, namesrvAddr should be set to your local address
 //        consumer.setNamesrvAddr(DEFAULT_NAMESRVADDR);
 
+        consumer.setNamespace("127.0.0.1:9876");
+
         /*
          * Specify where to start in case the specific consumer group is a brand-new one.
          */

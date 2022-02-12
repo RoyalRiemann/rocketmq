@@ -56,6 +56,8 @@ public class Producer {
         // Uncomment the following line while debugging, namesrvAddr should be set to your local address
 //        producer.setNamesrvAddr(DEFAULT_NAMESRVADDR);
 
+        producer.setNamesrvAddr("127.0.0.1:9876");
+
         /*
          * Launch the instance.
          */

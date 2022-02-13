@@ -210,10 +210,14 @@ public class MappedFileQueue implements Swappable {
         MappedFile mappedFileLast = getLastMappedFile();
 
         if (mappedFileLast == null) {
+            //举个例子：如果mappedFileSize=20,现在发过来的起始位置是99,说明几点，1.他肯定不是第一个文件，第二，他肯定不是某个文件的起始位置()
+            //因为他不能够整除mappedFileSize,那我们要创建第几个文件呢?,99/20=4,说明前面4个文件都已经full,他发的这个是第五个文件，那这个文件的起始位置
+            //是，99-99%20=80,判断下，第五个文件的起始位置的确是80，一次是，0，20，40，60，80
             createOffset = startOffset - (startOffset % this.mappedFileSize);
         }
 
         if (mappedFileLast != null && mappedFileLast.isFull()) {
+            //这里是因为上一个文件的起始位置是他的头，这个文件要加上mappedFileSize
             createOffset = mappedFileLast.getFileFromOffset() + this.mappedFileSize;
         }
 
@@ -260,6 +264,7 @@ public class MappedFileQueue implements Swappable {
     protected MappedFile doCreateMappedFile(String nextFilePath, String nextNextFilePath) {
         MappedFile mappedFile = null;
 
+        //可以使用临时池
         if (this.allocateMappedFileService != null) {
             mappedFile = this.allocateMappedFileService.putRequestAndReturnMappedFile(nextFilePath,
                     nextNextFilePath, this.mappedFileSize);

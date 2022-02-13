@@ -49,17 +49,19 @@ public class AllocateMappedFileService extends ServiceThread {
     }
 
     public MappedFile putRequestAndReturnMappedFile(String nextFilePath, String nextNextFilePath, int fileSize) {
+       //最对只有2个
         int canSubmitRequests = 2;
         if (this.messageStore.getMessageStoreConfig().isTransientStorePoolEnable()) {
-            if (this.messageStore.getMessageStoreConfig().isFastFailIfNoBufferInStorePool()
+            if (this.messageStore.getMessageStoreConfig().isFastFailIfNoBufferInStorePool()//快速失败
                 && BrokerRole.SLAVE != this.messageStore.getMessageStoreConfig().getBrokerRole()) { //if broker is slave, don't fast fail even no buffer in pool
-                canSubmitRequests = this.messageStore.getTransientStorePool().availableBufferNums() - this.requestQueue.size();
+                canSubmitRequests = this.messageStore.getTransientStorePool().availableBufferNums() - this.requestQueue.size();//队列中还有多少
             }
         }
 
         AllocateRequest nextReq = new AllocateRequest(nextFilePath, fileSize);
         boolean nextPutOK = this.requestTable.putIfAbsent(nextFilePath, nextReq) == null;
 
+        //这里应该是，如果没有能够submit的空间，就需要告警，垃圾。。。
         if (nextPutOK) {
             if (canSubmitRequests <= 0) {
                 log.warn("[NOTIFYME]TransientStorePool is not enough, so create mapped file error, " +

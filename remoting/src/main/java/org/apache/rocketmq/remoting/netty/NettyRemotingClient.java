@@ -152,13 +152,13 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
     public void start() {
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(
             nettyClientConfig.getClientWorkerThreads(),
-            new ThreadFactory() {
+                    new ThreadFactory() {
 
-                private AtomicInteger threadIndex = new AtomicInteger(0);
+                        private AtomicInteger threadIndex = new AtomicInteger(0);
 
-                @Override
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, "NettyClientWorkerThread_" + this.threadIndex.incrementAndGet());
+                        @Override
+                        public Thread newThread(Runnable r) {
+                            return new Thread(r, "NettyClientWorkerThread_" + this.threadIndex.incrementAndGet());
                 }
             });
 

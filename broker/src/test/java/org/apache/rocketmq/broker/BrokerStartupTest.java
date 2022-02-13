@@ -65,7 +65,6 @@ public class BrokerStartupTest {
         messageStoreConfig.setFlushDiskType(FlushDiskType.ASYNC_FLUSH);
         messageStoreConfig.setDuplicationEnable(false);
 
-//        BrokerPathConfigHelper.setBrokerConfigPath("/Users/yunai/百度云同步盘/开发/Javascript/Story/incubator-rocketmq/conf/broker.conf");
         // 创建 BrokerController 对象，并启动
         BrokerController brokerController = new BrokerController(//
             brokerConfig, //

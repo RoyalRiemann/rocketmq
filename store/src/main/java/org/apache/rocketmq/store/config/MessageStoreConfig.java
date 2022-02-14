@@ -166,7 +166,7 @@ public class MessageStoreConfig {
     private int flushCommitLogLeastPages = 4;
     // How many pages are to be committed when commit data to file
     private int commitCommitLogLeastPages = 4;
-    // Flush page size when the disk in warming state
+    // Flush page size when the disk in warming state:预热
     private int flushLeastPagesWhenWarmMapedFile = 1024 / 4 * 16;
     // How many pages are to be flushed when flush ConsumeQueue
     private int flushConsumeQueueLeastPages = 2;

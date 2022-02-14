@@ -105,6 +105,9 @@ public class ConsumeQueue {
             long maxExtAddr = 1;
             while (true) {
                 for (int i = 0; i < mappedFileSizeLogics; i += CQ_STORE_UNIT_SIZE) {
+                    //consumeQueue的格式：整个长度为20byte
+                    // ---8byte-----4byte----8byte
+                    //    offset----size-----tagCode
                     long offset = byteBuffer.getLong();
                     int size = byteBuffer.getInt();
                     long tagsCode = byteBuffer.getLong();
@@ -264,6 +267,7 @@ public class ConsumeQueue {
 
                         if (offset >= 0 && size > 0) {
 
+                            //这个判断表明，phyOffet所在的mappedFile是不用delete的？！
                             if (offset >= phyOffet) {
                                 return;
                             }
@@ -637,5 +641,4 @@ public class ConsumeQueue {
     public boolean isExtAddr(long tagsCode) {
         return ConsumeQueueExt.isExtAddr(tagsCode);
     }
-
 }

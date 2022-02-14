@@ -816,6 +816,7 @@ public class DefaultMessageStore implements MessageStore {
 
     public String getStorePathPhysic() {
         String storePathPhysic;
+        //喜欢用类名引用this的人咋想的?!
         if (DefaultMessageStore.this.getMessageStoreConfig().isEnableDLegerCommitLog()) {
             storePathPhysic = ((DLedgerCommitLog)DefaultMessageStore.this.getCommitLog()).getdLedgerServer().getdLedgerConfig().getDataStorePath();
         } else {

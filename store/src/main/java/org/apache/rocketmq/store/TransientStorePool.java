@@ -74,7 +74,7 @@ public class TransientStorePool {
         }
     }
 
-    //使用完毕之后归还ByteBuffer
+    //使用完毕之后归还ByteBuffer,使用完毕之后，将byteBuffer恢复,并且将该buffer插入可获得buffer列表中
     public void returnBuffer(ByteBuffer byteBuffer) {
         //ByteBuffer各下标复位
         byteBuffer.position(0);

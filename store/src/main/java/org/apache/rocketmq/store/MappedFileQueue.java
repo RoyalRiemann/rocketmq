@@ -56,6 +56,7 @@ public class MappedFileQueue {
         this.allocateMappedFileService = allocateMappedFileService;
     }
 
+    //验证两个mappedFile文件之间的大小是否是mappedFileSize
     public void checkSelf() {
 
         if (!this.mappedFiles.isEmpty()) {
@@ -118,7 +119,7 @@ public class MappedFileQueue {
                 }
             }
         }
-
+        //逻辑删除mappedFiles
         this.deleteExpiredFile(willRemoveFiles);
     }
 
@@ -126,6 +127,7 @@ public class MappedFileQueue {
 
         if (!files.isEmpty()) {
 
+            //这里代码重复了
             Iterator<MappedFile> iterator = files.iterator();
             while (iterator.hasNext()) {
                 MappedFile cur = iterator.next();
@@ -289,6 +291,7 @@ public class MappedFileQueue {
 
         ListIterator<MappedFile> iterator = this.mappedFiles.listIterator();
 
+        //?这段说明,每一个mappedFile都要设置position吗?
         while (iterator.hasPrevious()) {
             mappedFileLast = iterator.previous();
             if (offset >= mappedFileLast.getFileFromOffset()) {
@@ -356,6 +359,7 @@ public class MappedFileQueue {
         final int deleteFilesInterval,
         final long intervalForcibly,
         final boolean cleanImmediately) {
+        //这里判断，默认一个文件都不保留
         Object[] mfs = this.copyMappedFiles(0);
 
         if (null == mfs)
@@ -364,11 +368,14 @@ public class MappedFileQueue {
         int mfsLength = mfs.length - 1;
         int deleteCount = 0;
         List<MappedFile> files = new ArrayList<MappedFile>();
+        //物理删除
         if (null != mfs) {
             for (int i = 0; i < mfsLength; i++) {
                 MappedFile mappedFile = (MappedFile) mfs[i];
                 long liveMaxTimestamp = mappedFile.getLastModifiedTimestamp() + expiredTime;
+                //两个条件到达都要处理，一个是过期时间到了，一个是需要立即清理
                 if (System.currentTimeMillis() >= liveMaxTimestamp || cleanImmediately) {
+                    //最多删除BATCH_MAX数量的文件
                     if (mappedFile.destroy(intervalForcibly)) {
                         files.add(mappedFile);
                         deleteCount++;
@@ -377,6 +384,7 @@ public class MappedFileQueue {
                             break;
                         }
 
+                        //文件间隔删除
                         if (deleteFilesInterval > 0 && (i + 1) < mfsLength) {
                             try {
                                 Thread.sleep(deleteFilesInterval);
@@ -450,6 +458,7 @@ public class MappedFileQueue {
             long where = mappedFile.getFileFromOffset() + offset;
             result = where == this.flushedWhere;
             this.flushedWhere = where;
+            //刷新一页时存储时间等于原来的mappedFile时间
             if (0 == flushLeastPages) {
                 this.storeTimestamp = tmpTimeStamp;
             }
@@ -503,6 +512,7 @@ public class MappedFileQueue {
                         return targetFile;
                     }
 
+                    //这是什么场景?,估计是个补偿措施，如果上面拿不到，则轮询mappedFiles
                     for (MappedFile tmpMappedFile : this.mappedFiles) {
                         if (offset >= tmpMappedFile.getFileFromOffset()
                             && offset < tmpMappedFile.getFileFromOffset() + this.mappedFileSize) {

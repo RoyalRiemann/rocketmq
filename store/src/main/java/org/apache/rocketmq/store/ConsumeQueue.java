@@ -44,6 +44,7 @@ public class ConsumeQueue {
 
     private final String storePath;
     private final int mappedFileSize;
+    //这个偏移量是完全带B的偏移量,不是索引!!!
     private long maxPhysicOffset = -1;
     private volatile long minLogicOffset = 0;
     private ConsumeQueueExt consumeQueueExt = null;
@@ -380,6 +381,7 @@ public class ConsumeQueue {
         }
     }
 
+    //返回的是索引
     public long getMinOffsetInQueue() {
         return this.minLogicOffset / CQ_STORE_UNIT_SIZE;
     }
@@ -545,6 +547,7 @@ public class ConsumeQueue {
         }
     }
 
+    //通过索引查询对应的mappefBuffer
     public SelectMappedBufferResult getIndexBuffer(final long startIndex) {
         int mappedFileSize = this.mappedFileSize;
         long offset = startIndex * CQ_STORE_UNIT_SIZE;
@@ -615,6 +618,7 @@ public class ConsumeQueue {
         return this.getMaxOffsetInQueue() - this.getMinOffsetInQueue();
     }
 
+    //返回的是索引
     public long getMaxOffsetInQueue() {
         return this.mappedFileQueue.getMaxOffset() / CQ_STORE_UNIT_SIZE;
     }

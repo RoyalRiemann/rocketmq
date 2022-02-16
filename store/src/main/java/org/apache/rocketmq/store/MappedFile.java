@@ -312,7 +312,7 @@ public class MappedFile extends ReferenceResource {
                 int value = getReadPosition();
 
                 try {
-                    //We only append data to fileChannel or mappedByteBuffer, never both.
+                    //We only append data to fileChannel or mappedByteBuffer, never both.,flush是刷到磁盘中
                     if (writeBuffer != null || this.fileChannel.position() != 0) {
                         this.fileChannel.force(false);
                     } else {
@@ -350,7 +350,7 @@ public class MappedFile extends ReferenceResource {
         if (writeBuffer != null && this.transientStorePool != null
             && this.fileSize == this.committedPosition.get()) {
             this.transientStorePool.returnBuffer(writeBuffer);
-            this.writeBuffer = null;
+            this.writeBuffer = null;//GC......
         }
 
         return this.committedPosition.get();

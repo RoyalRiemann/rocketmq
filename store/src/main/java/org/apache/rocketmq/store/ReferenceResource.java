@@ -46,6 +46,7 @@ public abstract class ReferenceResource {
             this.firstShutdownTimestamp = System.currentTimeMillis();
             this.release();
         } else if (this.getRefCount() > 0) {
+            //如果不是第一次清除，需要判断时间间隔是否大于参数,但是这里又不会变更这参数......
             if ((System.currentTimeMillis() - this.firstShutdownTimestamp) >= intervalForcibly) {
                 this.refCount.set(-1000 - this.getRefCount());
                 this.release();

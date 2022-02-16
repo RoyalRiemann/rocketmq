@@ -53,16 +53,22 @@ public class MultiDispatch {
     }
 
     public boolean wrapMultiDispatch(final MessageExtBrokerInner msgInner) {
+        //不能够多任务调用
         if (!messageStore.getMessageStoreConfig().isEnableMultiDispatch()) {
             return true;
         }
+
+        //配置
         String multiDispatchQueue = msgInner.getProperty(MessageConst.PROPERTY_INNER_MULTI_DISPATCH);
         if (StringUtils.isBlank(multiDispatchQueue)) {
             return true;
         }
         String[] queues = multiDispatchQueue.split(MixAll.MULTI_DISPATCH_QUEUE_SPLITTER);
         Long[] queueOffsets = new Long[queues.length];
+
+        //这里的队列名居然是topic?
         for (int i = 0; i < queues.length; i++) {
+            //queueName-queueId
             String key = queueKey(queues[i], msgInner);
             Long queueOffset;
             try {

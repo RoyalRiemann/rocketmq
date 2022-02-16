@@ -46,6 +46,7 @@ public class ConsumeQueue {
     private final int mappedFileSize;
     //这个偏移量是完全带B的偏移量,不是索引!!!
     private long maxPhysicOffset = -1;
+    //这个也是偏移量,是代表的consumeQueue最大的容量
     private volatile long minLogicOffset = 0;
     private ConsumeQueueExt consumeQueueExt = null;
 

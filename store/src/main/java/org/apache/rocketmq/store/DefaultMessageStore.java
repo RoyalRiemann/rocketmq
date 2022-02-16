@@ -598,6 +598,7 @@ public class DefaultMessageStore implements MessageStore {
         return commitLog;
     }
 
+    //offset偏移量是索引
     public GetMessageResult getMessage(final String group, final String topic, final int queueId,
         final long offset,
         final int maxMsgNums,
@@ -635,7 +636,7 @@ public class DefaultMessageStore implements MessageStore {
         //查询消息的时候,先查询ConSumeQueue,相当于先查询索引
         ConsumeQueue consumeQueue = findConsumeQueue(topic, queueId);
         if (consumeQueue != null) {
-            //这里返回的是索引
+            //这里返回的是索引,所以理论上命名的时候需要进行辨识
             minOffset = consumeQueue.getMinOffsetInQueue();
             maxOffset = consumeQueue.getMaxOffsetInQueue();
 
@@ -665,7 +666,7 @@ public class DefaultMessageStore implements MessageStore {
                         long maxPhyOffsetPulling = 0;
 
                         int i = 0;
-                        //这里的消息还是Consume Queue的?
+                        //这里的消息还是Consume Queue的?这里应该就是一个经验值
                         final int maxFilterMessageCount = Math
                             .max(16000, maxMsgNums * ConsumeQueue.CQ_STORE_UNIT_SIZE);
                         final boolean diskFallRecorded = this.messageStoreConfig
@@ -723,6 +724,7 @@ public class DefaultMessageStore implements MessageStore {
                                 continue;
                             }
 
+                            //offsetPy 开始的偏移量,sizePy 开始的大小
                             SelectMappedBufferResult selectResult = this.commitLog
                                 .getMessage(offsetPy, sizePy);
                             if (null == selectResult) {
@@ -948,6 +950,7 @@ public class DefaultMessageStore implements MessageStore {
         return result;
     }
 
+    //最大物理偏移量就是在commitlog中当前写入消息的位置
     @Override
     public long getMaxPhyOffset() {
         return this.commitLog.getMaxOffset();
@@ -1015,6 +1018,7 @@ public class DefaultMessageStore implements MessageStore {
         return -1;
     }
 
+    //获取指定偏移量后的所有数据
     @Override
     public SelectMappedBufferResult getCommitLogData(final long offset) {
         if (this.shutdown) {
@@ -1025,6 +1029,7 @@ public class DefaultMessageStore implements MessageStore {
         return this.commitLog.getData(offset);
     }
 
+    //从指定位置追加message
     @Override
     public boolean appendToCommitLog(long startOffset, byte[] data, int dataStart, int dataLength) {
         if (this.shutdown) {
@@ -1398,20 +1403,20 @@ public class DefaultMessageStore implements MessageStore {
 
         if (isInDisk) {
             if ((bufferTotal + sizePy) > this.messageStoreConfig
-                .getMaxTransferBytesOnMessageInDisk()) {
+                .getMaxTransferBytesOnMessageInDisk()) {//1024*64
                 return true;
             }
 
-            if (messageTotal > this.messageStoreConfig.getMaxTransferCountOnMessageInDisk() - 1) {
+            if (messageTotal > this.messageStoreConfig.getMaxTransferCountOnMessageInDisk() - 1) {//8
                 return true;
             }
         } else {
             if ((bufferTotal + sizePy) > this.messageStoreConfig
-                .getMaxTransferBytesOnMessageInMemory()) {
+                .getMaxTransferBytesOnMessageInMemory()) {//1024*256
                 return true;
             }
 
-            if (messageTotal > this.messageStoreConfig.getMaxTransferCountOnMessageInMemory() - 1) {
+            if (messageTotal > this.messageStoreConfig.getMaxTransferCountOnMessageInMemory() - 1) {//32
                 return true;
             }
         }

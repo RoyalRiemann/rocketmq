@@ -82,6 +82,11 @@ public class DefaultMessageStoreTest {
         messageStore.start();
     }
 
+    @Test
+    public void testCommitLog(){
+
+    }
+
     @Test(expected = OverlappingFileLockException.class)
     public void test_repeat_restart() throws Exception {
         queueTotal = 1;

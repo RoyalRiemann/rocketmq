@@ -82,6 +82,7 @@ public class TopicValidator {
         }
     }
 
+    //这哥们估计是刷过算法题,代码的意思是,如果再128之内的编码都是OK的
     public static boolean isTopicOrGroupIllegal(String str) {
         int strLen = str.length();
         int len = VALID_CHAR_BIT_MAP.length;
@@ -109,6 +110,7 @@ public class TopicValidator {
             return false;
         }
 
+        //topic长度不能超过127位
         if (topic.length() > TOPIC_MAX_LENGTH) {
             response.setCode(ResponseCode.SYSTEM_ERROR);
             response.setRemark("The specified topic is longer than topic max length.");
@@ -154,5 +156,9 @@ public class TopicValidator {
 
     public static Set<String> getNotAllowedSendTopicSet() {
         return NOT_ALLOWED_SEND_TOPIC_SET;
+    }
+
+    public static void main(String[] args) {
+        isTopicOrGroupIllegal("abc");
     }
 }

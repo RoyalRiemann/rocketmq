@@ -206,6 +206,7 @@ public class TopicConfigManager extends ConfigManager {
         boolean createNew = false;
 
         try {
+            //lock 3s
             if (this.topicConfigTableLock.tryLock(LOCK_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)) {
                 try {
                     topicConfig = this.topicConfigTable.get(topic);

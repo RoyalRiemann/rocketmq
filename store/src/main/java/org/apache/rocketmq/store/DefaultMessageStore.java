@@ -1246,6 +1246,7 @@ public class DefaultMessageStore implements MessageStore {
         return this.aliveReplicasNum;
     }
 
+    //slave落后多少数据:等于commitLog得最大偏移量-slave本身得偏移量;还有一个最大值
     @Override
     public long slaveFallBehindMuch() {
         if (this.haService == null || this.messageStoreConfig.isDuplicationEnable() || this.messageStoreConfig.isEnableDLegerCommitLog()) {

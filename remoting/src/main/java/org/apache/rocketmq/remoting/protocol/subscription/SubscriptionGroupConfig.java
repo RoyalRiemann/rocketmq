@@ -20,6 +20,7 @@ package org.apache.rocketmq.remoting.protocol.subscription;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.rocketmq.common.MixAll;
 
+//消费组,或者订阅组
 public class SubscriptionGroupConfig {
 
     private String groupName;

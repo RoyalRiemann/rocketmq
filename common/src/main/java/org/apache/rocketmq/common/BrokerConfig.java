@@ -64,7 +64,7 @@ public class BrokerConfig extends BrokerIdentity {
     @ImportantField
     private String msgTraceTopicName = TopicValidator.RMQ_SYS_TRACE_TOPIC;
     @ImportantField
-    private boolean traceTopicEnable = false;
+    private boolean traceTopicEnable = false;//跟踪日志的topic,如果不启动不打印跟踪日志
     /**
      * thread numbers for send message thread pool.
      */
@@ -142,8 +142,10 @@ public class BrokerConfig extends BrokerIdentity {
 
     private int sendHeartbeatTimeoutMillis = 1000;
 
+    //slave读属性
     private boolean slaveReadEnable = false;
 
+    //如果消费者读的比较慢,是否将次消费置为不可用
     private boolean disableConsumeIfConsumerReadSlowly = false;
     private long consumerFallbehindThreshold = 1024L * 1024 * 1024 * 16;
 
@@ -157,6 +159,7 @@ public class BrokerConfig extends BrokerIdentity {
 
     private long startAcceptSendRequestTimeStamp = 0L;
 
+    //好像这字段额外加了
     private boolean traceOn = true;
 
     // Switch of filter bit map calculation.

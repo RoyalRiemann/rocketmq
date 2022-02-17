@@ -42,8 +42,10 @@ public class BrokerStats {
         this.msgPutTotalYesterdayMorning = this.msgPutTotalTodayMorning;
         this.msgGetTotalYesterdayMorning = this.msgGetTotalTodayMorning;
 
+        //统计昨天所有生成的消息的时间
         this.msgPutTotalTodayMorning =
             this.defaultMessageStore.getStoreStatsService().getPutMessageTimesTotal();
+        //统计昨天所有的查询信息的数量
         this.msgGetTotalTodayMorning =
             this.defaultMessageStore.getStoreStatsService().getGetMessageTransferedMsgCount().longValue();
 

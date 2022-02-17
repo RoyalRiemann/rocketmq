@@ -19,6 +19,7 @@ package org.apache.rocketmq.common.subscription;
 
 import org.apache.rocketmq.common.MixAll;
 
+//消费组,或者订阅组
 public class SubscriptionGroupConfig {
 
     private String groupName;

@@ -34,6 +34,7 @@ public class PullRequestHoldService extends ServiceThread {
     protected static final String TOPIC_QUEUEID_SEPARATOR = "@";
     protected final BrokerController brokerController;
     private final SystemClock systemClock = new SystemClock();
+    //hold住的客户端请求
     protected ConcurrentMap<String/* topic@queueId */, ManyPullRequest> pullRequestTable =
         new ConcurrentHashMap<String, ManyPullRequest>(1024);
 
@@ -68,6 +69,7 @@ public class PullRequestHoldService extends ServiceThread {
         log.info("{} service started", this.getServiceName());
         while (!this.isStopped()) {
             try {
+                //如果开启了长轮询,则5秒运行,否则,默认用短轮询间隔
                 if (this.brokerController.getBrokerConfig().isLongPollingEnable()) {
                     this.waitForRunning(5 * 1000);
                 } else {
@@ -124,6 +126,7 @@ public class PullRequestHoldService extends ServiceThread {
 
                 for (PullRequest request : requestList) {
                     long newestOffset = maxOffset;
+                    //客户要求从这里拉取,如果你查询到的最大offset都小于找个数字,是出现了什么问题?在查询一遍不是同一个结果么?
                     if (newestOffset <= request.getPullFromThisOffset()) {
                         newestOffset = this.brokerController.getMessageStore().getMaxOffsetInQueue(topic, queueId);
                     }

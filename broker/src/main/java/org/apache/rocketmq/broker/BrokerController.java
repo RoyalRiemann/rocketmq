@@ -274,6 +274,7 @@ public class BrokerController {
             NettyServerConfig fastConfig = (NettyServerConfig) this.nettyServerConfig.clone();
             fastConfig.setListenPort(nettyServerConfig.getListenPort() - 2);
             this.fastRemotingServer = new NettyRemotingServer(fastConfig, this.clientHousekeepingService);
+            //发送消息的线程池
             this.sendMessageExecutor = new BrokerFixedThreadPoolExecutor(
                 this.brokerConfig.getSendMessageThreadPoolNums(),
                 this.brokerConfig.getSendMessageThreadPoolNums(),
@@ -282,6 +283,7 @@ public class BrokerController {
                 this.sendThreadPoolQueue,
                 new ThreadFactoryImpl("SendMessageThread_"));
 
+            //获取返回结果的线程池
             this.putMessageFutureExecutor = new BrokerFixedThreadPoolExecutor(
                 this.brokerConfig.getPutMessageFutureThreadPoolNums(),
                 this.brokerConfig.getPutMessageFutureThreadPoolNums(),
@@ -290,6 +292,7 @@ public class BrokerController {
                 this.putThreadPoolQueue,
                 new ThreadFactoryImpl("PutMessageThread_"));
 
+            //拉取消息的线程池
             this.pullMessageExecutor = new BrokerFixedThreadPoolExecutor(
                 this.brokerConfig.getPullMessageThreadPoolNums(),
                 this.brokerConfig.getPullMessageThreadPoolNums(),
@@ -298,6 +301,7 @@ public class BrokerController {
                 this.pullThreadPoolQueue,
                 new ThreadFactoryImpl("PullMessageThread_"));
 
+            //回复消息的线程池
             this.replyMessageExecutor = new BrokerFixedThreadPoolExecutor(
                 this.brokerConfig.getProcessReplyMessageThreadPoolNums(),
                 this.brokerConfig.getProcessReplyMessageThreadPoolNums(),
@@ -306,6 +310,7 @@ public class BrokerController {
                 this.replyThreadPoolQueue,
                 new ThreadFactoryImpl("ProcessReplyMessageThread_"));
 
+            //查询消息的线程池
             this.queryMessageExecutor = new BrokerFixedThreadPoolExecutor(
                 this.brokerConfig.getQueryMessageThreadPoolNums(),
                 this.brokerConfig.getQueryMessageThreadPoolNums(),
@@ -314,10 +319,12 @@ public class BrokerController {
                 this.queryThreadPoolQueue,
                 new ThreadFactoryImpl("QueryMessageThread_"));
 
+            //管理broker的线程池
             this.adminBrokerExecutor =
                 Executors.newFixedThreadPool(this.brokerConfig.getAdminBrokerThreadPoolNums(), new ThreadFactoryImpl(
                     "AdminBrokerThread_"));
 
+            //管理客户端的线程池
             this.clientManageExecutor = new ThreadPoolExecutor(
                 this.brokerConfig.getClientManageThreadPoolNums(),
                 this.brokerConfig.getClientManageThreadPoolNums(),
@@ -326,6 +333,7 @@ public class BrokerController {
                 this.clientManagerThreadPoolQueue,
                 new ThreadFactoryImpl("ClientManageThread_"));
 
+            //心跳检测的线程池
             this.heartbeatExecutor = new BrokerFixedThreadPoolExecutor(
                 this.brokerConfig.getHeartbeatThreadPoolNums(),
                 this.brokerConfig.getHeartbeatThreadPoolNums(),
@@ -334,6 +342,7 @@ public class BrokerController {
                 this.heartbeatThreadPoolQueue,
                 new ThreadFactoryImpl("HeartbeatThread_", true));
 
+            //事务相关的线程池
             this.endTransactionExecutor = new BrokerFixedThreadPoolExecutor(
                 this.brokerConfig.getEndTransactionThreadPoolNums(),
                 this.brokerConfig.getEndTransactionThreadPoolNums(),
@@ -342,6 +351,7 @@ public class BrokerController {
                 this.endTransactionThreadPoolQueue,
                 new ThreadFactoryImpl("EndTransactionThread_"));
 
+            //客户管理的线程池
             this.consumerManageExecutor =
                 Executors.newFixedThreadPool(this.brokerConfig.getConsumerManageThreadPoolNums(), new ThreadFactoryImpl(
                     "ConsumerManageThread_"));
@@ -354,6 +364,7 @@ public class BrokerController {
                 @Override
                 public void run() {
                     try {
+                        //broker相关信息统计
                         BrokerController.this.getBrokerStats().record();
                     } catch (Throwable e) {
                         log.error("schedule record error.", e);
@@ -361,6 +372,7 @@ public class BrokerController {
                 }
             }, initialDelay, period, TimeUnit.MILLISECONDS);
 
+            //10秒延时,每5秒执行,把内存中的COnsumeOffSet持久化到磁盘
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -372,6 +384,7 @@ public class BrokerController {
                 }
             }, 1000 * 10, this.brokerConfig.getFlushConsumerOffsetInterval(), TimeUnit.MILLISECONDS);
 
+            //客户过滤器持久化
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -383,6 +396,7 @@ public class BrokerController {
                 }
             }, 1000 * 10, 1000 * 10, TimeUnit.MILLISECONDS);
 
+            //延迟三分钟,每3分钟执行一次,如果某些客户端的数据差距实在太大,则直接把找个Consumer从订阅组里面剔除掉
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -405,6 +419,7 @@ public class BrokerController {
                 }
             }, 10, 1, TimeUnit.SECONDS);
 
+            //单纯打下日志?
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
                 @Override
@@ -417,10 +432,12 @@ public class BrokerController {
                 }
             }, 1000 * 10, 1000 * 60, TimeUnit.MILLISECONDS);
 
+            //乱序得向所有namesrv更新?但是这段代码没有向远程发送请求
             if (this.brokerConfig.getNamesrvAddr() != null) {
                 this.brokerOuterAPI.updateNameServerAddressList(this.brokerConfig.getNamesrvAddr());
                 log.info("Set user specified name server address: {}", this.brokerConfig.getNamesrvAddr());
             } else if (this.brokerConfig.isFetchNamesrvAddrByAddressServer()) {
+                //从远程获取到nameSrvAddress...
                 this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
                     @Override
@@ -431,18 +448,19 @@ public class BrokerController {
                             log.error("ScheduledTask fetchNameServerAddr exception", e);
                         }
                     }
-                }, 1000 * 10, 1000 * 60 * 2, TimeUnit.MILLISECONDS);
+                }, 1000 * 10, 1000 * 60 * 2, TimeUnit.MILLISECONDS);//每隔2分钟
             }
 
-            if (!messageStoreConfig.isEnableDLegerCommitLog()) {
-                if (BrokerRole.SLAVE == this.messageStoreConfig.getBrokerRole()) {
-                    if (this.messageStoreConfig.getHaMasterAddress() != null && this.messageStoreConfig.getHaMasterAddress().length() >= 6) {
-                        this.messageStore.updateHaMasterAddress(this.messageStoreConfig.getHaMasterAddress());
+            if (!messageStoreConfig.isEnableDLegerCommitLog()) {//如果不是dleger架构
+                if (BrokerRole.SLAVE == this.messageStoreConfig.getBrokerRole()) {//如果是slave
+                    if (this.messageStoreConfig.getHaMasterAddress() != null && this.messageStoreConfig.getHaMasterAddress().length() >= 6) {//更新HA地址
+                        this.messageStore.updateHaMasterAddress(this.messageStoreConfig.getHaMasterAddress());//调用HA服务,更新master地址
                         this.updateMasterHAServerAddrPeriodically = false;
                     } else {
                         this.updateMasterHAServerAddrPeriodically = true;
                     }
                 } else {
+                    //非slave得时候,打印一下自己与slave之间得偏差,延时10s,1分钟执行一次
                     this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                         @Override
                         public void run() {
@@ -456,7 +474,7 @@ public class BrokerController {
                 }
             }
 
-            if (TlsSystemConfig.tlsMode != TlsMode.DISABLED) {
+            if (TlsSystemConfig.tlsMode != TlsMode.DISABLED) {//TLS可用
                 // Register a listener to reload SslContext
                 try {
                     fileWatchService = new FileWatchService(
@@ -560,6 +578,7 @@ public class BrokerController {
         }
     }
 
+    //注册各种处理器
     public void registerProcessor() {
         /**
          * SendMessageProcessor
@@ -577,13 +596,13 @@ public class BrokerController {
         this.fastRemotingServer.registerProcessor(RequestCode.SEND_BATCH_MESSAGE, sendProcessor, this.sendMessageExecutor);
         this.fastRemotingServer.registerProcessor(RequestCode.CONSUMER_SEND_MSG_BACK, sendProcessor, this.sendMessageExecutor);
         /**
-         * PullMessageProcessor
+         * PullMessageProcessor,消息拉取处理器
          */
         this.remotingServer.registerProcessor(RequestCode.PULL_MESSAGE, this.pullMessageProcessor, this.pullMessageExecutor);
         this.pullMessageProcessor.registerConsumeMessageHook(consumeMessageHookList);
 
         /**
-         * ReplyMessageProcessor
+         * ReplyMessageProcessor,回复消息处理器
          */
         ReplyMessageProcessor replyMessageProcessor = new ReplyMessageProcessor(this);
         replyMessageProcessor.registerSendMessageHook(sendMessageHookList);
@@ -594,7 +613,7 @@ public class BrokerController {
         this.fastRemotingServer.registerProcessor(RequestCode.SEND_REPLY_MESSAGE_V2, replyMessageProcessor, replyMessageExecutor);
 
         /**
-         * QueryMessageProcessor
+         * QueryMessageProcessor,查询消息处理器
          */
         NettyRequestProcessor queryProcessor = new QueryMessageProcessor(this);
         this.remotingServer.registerProcessor(RequestCode.QUERY_MESSAGE, queryProcessor, this.queryMessageExecutor);
@@ -604,7 +623,7 @@ public class BrokerController {
         this.fastRemotingServer.registerProcessor(RequestCode.VIEW_MESSAGE_BY_ID, queryProcessor, this.queryMessageExecutor);
 
         /**
-         * ClientManageProcessor
+         * ClientManageProcessor,fastRemotingServier是以前版本给客户端开的一个VIP通道,假设用户使用较多,针对重要的数据,再开一个端口接收,后面没用了
          */
         ClientManageProcessor clientProcessor = new ClientManageProcessor(this);
         this.remotingServer.registerProcessor(RequestCode.HEART_BEAT, clientProcessor, this.heartbeatExecutor);
@@ -634,7 +653,7 @@ public class BrokerController {
         this.fastRemotingServer.registerProcessor(RequestCode.END_TRANSACTION, new EndTransactionProcessor(this), this.endTransactionExecutor);
 
         /**
-         * Default
+         * Default broker管理相关的处理器
          */
         AdminBrokerProcessor adminProcessor = new AdminBrokerProcessor(this);
         this.remotingServer.registerDefaultProcessor(adminProcessor, this.adminBrokerExecutor);
@@ -655,6 +674,7 @@ public class BrokerController {
             while (it.hasNext()) {
                 final Map.Entry<String, MomentStatsItem> next = it.next();
                 final long fallBehindBytes = next.getValue().getValue().get();
+                //如果落后16G的数据?
                 if (fallBehindBytes > this.brokerConfig.getConsumerFallbehindThreshold()) {
                     final String[] split = next.getValue().getStatsKey().split("@");
                     final String group = split[2];
@@ -927,8 +947,6 @@ public class BrokerController {
         if (this.brokerFastFailure != null) {
             this.brokerFastFailure.start();
         }
-
-
     }
 
     public synchronized void registerIncrementBrokerData(TopicConfig topicConfig, DataVersion dataVersion) {
@@ -1158,6 +1176,7 @@ public class BrokerController {
                 slaveSyncFuture.cancel(false);
             }
             this.slaveSynchronize.setMasterAddr(null);
+            //延时3s,每10s一次
             slaveSyncFuture = this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {

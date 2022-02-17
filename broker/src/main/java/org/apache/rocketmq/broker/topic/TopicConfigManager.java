@@ -47,6 +47,7 @@ public class TopicConfigManager extends ConfigManager {
 
     private transient final Lock topicConfigTableLock = new ReentrantLock();
 
+    //topicName,topicConfig
     private final ConcurrentMap<String, TopicConfig> topicConfigTable =
         new ConcurrentHashMap<String, TopicConfig>(1024);
     private final DataVersion dataVersion = new DataVersion();
@@ -88,7 +89,7 @@ public class TopicConfigManager extends ConfigManager {
             this.topicConfigTable.put(topicConfig.getTopicName(), topicConfig);
         }
         {
-
+            //brokerClusterName 作为topic
             String topic = this.brokerController.getBrokerConfig().getBrokerClusterName();
             TopicConfig topicConfig = new TopicConfig(topic);
             TopicValidator.addSystemTopic(topic);

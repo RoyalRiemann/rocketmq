@@ -85,6 +85,7 @@ public class DefaultMQProducerTest {
 
     @Before
     public void init() throws Exception {
+        System.setProperty(ClientLogger.CLIENT_LOG_USESLF4J, "true");
         String producerGroupTemp = producerGroupPrefix + System.currentTimeMillis();
         producer = new DefaultMQProducer(producerGroupTemp);
         producer.setNamesrvAddr("127.0.0.1:9876");

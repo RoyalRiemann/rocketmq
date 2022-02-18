@@ -17,6 +17,7 @@
 package org.apache.rocketmq.client.consumer.rebalance;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.rocketmq.client.log.ClientLogger;
 import org.apache.rocketmq.logging.InternalLogger;
@@ -44,21 +45,59 @@ public class AllocateMessageQueueAveragely extends AbstractAllocateMessageQueueS
             return result;
         }
 
+        //cidAll:[1,3,4] currentCID 3; index =1;
         int index = cidAll.indexOf(currentCID);
+        //mqALL:8,mod=2
         int mod = mqAll.size() % cidAll.size();
+        //
         int averageSize =
-            mqAll.size() <= cidAll.size() ? 1 : (mod > 0 && index < mod ? mqAll.size() / cidAll.size()
-                + 1 : mqAll.size() / cidAll.size());
-        int startIndex = (mod > 0 && index < mod) ? index * averageSize : index * averageSize + mod;
-        int range = Math.min(averageSize, mqAll.size() - startIndex);
+            mqAll.size() <= cidAll.size() ? 1 :
+                (mod > 0 && index < mod ? mqAll.size() / cidAll.size()+ 1 //这个判断说明,如果你的所以再小于余数,你要多拿一个数字
+                    : mqAll.size() / cidAll.size());//大于余数或者等于余数,就是整除的结果.很好理解
+        int startIndex = (mod > 0 && index < mod) ? index * averageSize //比如现在情况起始索引为是:3
+                          : index * averageSize + mod;
+        int range = Math.min(averageSize, mqAll.size() - startIndex);//range=3
         for (int i = 0; i < range; i++) {
             result.add(mqAll.get((startIndex + i) % mqAll.size()));
         }
+        //
         return result;
     }
 
     @Override
     public String getName() {
         return "AVG";
+    }
+
+    public static void main(String[] args) {
+
+        List<String> cidAll = new ArrayList<>();
+        cidAll.add("1");
+        cidAll.add("3");
+        cidAll.add("4");
+        String currentCID = "3";
+
+        List<String> mqAll = new ArrayList<>(Arrays.asList("1","2","3","4","5","6","7","8"));
+        List<String> result = new ArrayList<>();
+
+
+        //cidAll:[1,3,4] currentCID 3; index =1;
+        int index = cidAll.indexOf(currentCID);
+        //mqALL:8,mod=2
+        int mod = mqAll.size() % cidAll.size();
+        //
+        int averageSize =
+            mqAll.size() <= cidAll.size() ? 1 :
+                (mod > 0 && index < mod ? mqAll.size() / cidAll.size()+ 1 //这个判断说明,如果你的所以再小于余数,你要多拿一个数字
+                    : mqAll.size() / cidAll.size());//大于余数或者等于余数,就是整除的结果.很好理解
+        int startIndex = (mod > 0 && index < mod) ? index * averageSize //比如现在情况起始索引为是:3
+            : index * averageSize + mod;
+        int range = Math.min(averageSize, mqAll.size() - startIndex);//range=3
+        for (int i = 0; i < range; i++) {
+            //取连续的一片
+            result.add(mqAll.get((startIndex + i) % mqAll.size()));
+        }
+        //
+        result.forEach(System.out::print);
     }
 }

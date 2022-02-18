@@ -124,7 +124,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      * </li>
      * </ul>
      */
-    private ConsumeFromWhere consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET;
+    private ConsumeFromWhere consumeFromWhere = ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET;//从哪个点开始消费这个逻辑比较重要
 
     /**
      * Backtracking consumption time with second precision. Time format is
@@ -132,7 +132,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      * Implying Seventeen twelve and 01 seconds on December 23, 2013 year<br>
      * Default backtracking consumption time Half an hour ago.
      */
-    private String consumeTimestamp = UtilAll.timeMillisToHumanString3(System.currentTimeMillis() - (1000 * 60 * 30));
+    private String consumeTimestamp = UtilAll.timeMillisToHumanString3(System.currentTimeMillis() - (1000 * 60 * 30));//30分钟前
 
     /**
      * Queue allocation algorithm specifying how message queues are allocated to each consumer clients.
@@ -140,7 +140,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
     private AllocateMessageQueueStrategy allocateMessageQueueStrategy;
 
     /**
-     * Subscription relationship
+     * Subscription relationship订阅关系
      */
     private Map<String /* topic */, String /* sub expression */> subscription = new HashMap<String, String>();
 
@@ -165,18 +165,19 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
     private int consumeThreadMax = 20;
 
     /**
-     * Threshold for dynamic adjustment of the number of thread pool
+     * Threshold for dynamic adjustment of the number of thread pool 10w?
      */
     private long adjustThreadPoolNumsThreshold = 100000;
 
     /**
-     * Concurrently max span offset.it has no effect on sequential consumption
+     * Concurrently max span offset.it has no effect on sequential consumption对顺序消费没有影响
      */
     private int consumeConcurrentlyMaxSpan = 2000;
 
     /**
      * Flow control threshold on queue level, each message queue will cache at most 1000 messages by default,
      * Consider the {@code pullBatchSize}, the instantaneous value may exceed the limit
+     * 队列级别的流控限制
      */
     private int pullThresholdForQueue = 1000;
 
@@ -186,6 +187,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      *
      * <p>
      * The size of a message only measured by message body, so it's not accurate
+     * 队列级别的缓存消息大小
      */
     private int pullThresholdSizeForQueue = 100;
 
@@ -197,6 +199,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      * <p>
      * For example, if the value of pullThresholdForTopic is 1000 and 10 message queues are assigned to this consumer,
      * then pullThresholdForQueue will be set to 100
+     * topic级别流控,默认被控制
      */
     private int pullThresholdForTopic = -1;
 
@@ -212,12 +215,13 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
     private int pullThresholdSizeForTopic = -1;
 
     /**
-     * Message pull Interval
+     * Message pull Interval,拉取间隔
      */
     private long pullInterval = 0;
 
     /**
      * Batch consumption size
+     * 批量大小
      */
     private int consumeMessageBatchMaxSize = 1;
 
@@ -228,6 +232,7 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
 
     /**
      * Whether update subscription relationship when every pull
+     * 每次拉取时是否都更新订阅关系
      */
     private boolean postSubscriptionWhenPull = false;
 
@@ -242,16 +247,19 @@ public class DefaultMQPushConsumer extends ClientConfig implements MQPushConsume
      * In orderly mode, -1 means Integer.MAX_VALUE.
      *
      * If messages are re-consumed more than {@link #maxReconsumeTimes} before success.
+     * 重新消费的次数,最多16次,顺序消息无限
      */
     private int maxReconsumeTimes = -1;
 
     /**
      * Suspending pulling time for cases requiring slow pulling like flow-control scenario.
+     * 阻塞时间
      */
     private long suspendCurrentQueueTimeMillis = 1000;
 
     /**
      * Maximum amount of time in minutes a message may block the consuming thread.
+     * 最大锁定15分钟
      */
     private long consumeTimeout = 15;
 

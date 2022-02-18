@@ -149,6 +149,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         if (producer.getExecutorService() != null) {
             this.checkExecutor = producer.getExecutorService();
         } else {
+            //持有的请求数?
             this.checkRequestQueue = new LinkedBlockingQueue<Runnable>(producer.getCheckRequestHoldMax());
             this.checkExecutor = new ThreadPoolExecutor(
                 producer.getCheckThreadPoolMinSize(),
@@ -266,6 +267,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         }
     }
 
+    //获取topic信息
     @Override
     public Set<String> getPublishTopicList() {
         Set<String> topicList = new HashSet<String>();
@@ -276,6 +278,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         return topicList;
     }
 
+    //如果topicPublishInfo为空或者路由的messageQueueList为空,则需要更新
     @Override
     public boolean isPublishTopicNeedUpdate(String topic) {
         TopicPublishInfo prev = this.topicPublishInfoTable.get(topic);
@@ -288,7 +291,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
      */
     @Override
     @Deprecated
-    public TransactionCheckListener checkListener() {
+    public TransactionCheckListener checkListener() {//如果是事务的生产者,则获取事务监控
         if (this.defaultMQProducer instanceof TransactionMQProducer) {
             TransactionMQProducer producer = (TransactionMQProducer) defaultMQProducer;
             return producer.getTransactionCheckListener();
@@ -298,7 +301,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
     }
 
     @Override
-    public TransactionListener getCheckListener() {
+    public TransactionListener getCheckListener() {//如果是事务的生产者,则获取事务监控,is recommended
         if (this.defaultMQProducer instanceof TransactionMQProducer) {
             TransactionMQProducer producer = (TransactionMQProducer) defaultMQProducer;
             return producer.getTransactionListener();
@@ -317,6 +320,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
 
             @Override
             public void run() {
+                //这个是不推荐了
                 TransactionCheckListener transactionCheckListener = DefaultMQProducerImpl.this.checkListener();
                 TransactionListener transactionListener = getCheckListener();
                 if (transactionCheckListener != null || transactionListener != null) {
@@ -456,6 +460,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
         return this.mQClientFactory.getMQAdminImpl().earliestMsgStoreTime(mq);
     }
 
+    //方法名是真的垃圾
     public MessageExt viewMessage(
         String msgId) throws RemotingException, MQBrokerException, InterruptedException, MQClientException {
         this.makeSureStateOK();

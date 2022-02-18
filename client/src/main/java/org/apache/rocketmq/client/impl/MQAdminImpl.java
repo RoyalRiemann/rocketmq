@@ -103,6 +103,7 @@ public class MQAdminImpl {
                         topicConfig.setTopicSysFlag(topicSysFlag);
 
                         boolean createOK = false;
+                        //为什么要循环五次?
                         for (int i = 0; i < 5; i++) {
                             try {
                                 this.mQClientFactory.getMQClientAPIImpl().createTopic(addr, key, topicConfig, timeoutMillis);

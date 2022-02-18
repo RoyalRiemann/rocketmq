@@ -41,11 +41,13 @@ public class Validators {
             throw new MQClientException("the specified group is blank", null);
         }
 
+        //producer组长度不能朝贡255
         if (group.length() > CHARACTER_MAX_LENGTH) {
             throw new MQClientException("the specified group is longer than group max length 255.", null);
         }
 
 
+        //是正常的范围
         if (isTopicOrGroupIllegal(group)) {
             throw new MQClientException(String.format(
                     "the specified group[%s] contains illegal characters, allowing only %s", group,

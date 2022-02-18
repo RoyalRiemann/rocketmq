@@ -234,6 +234,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
             throw new MQClientException("producerGroup is null", null);
         }
 
+        //default-producer不能使用
         if (this.defaultMQProducer.getProducerGroup().equals(MixAll.DEFAULT_PRODUCER_GROUP)) {
             throw new MQClientException("producerGroup can not equal " + MixAll.DEFAULT_PRODUCER_GROUP + ", please specify another one.",
                 null);

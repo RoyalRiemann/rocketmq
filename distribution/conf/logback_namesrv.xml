@@ -103,7 +103,7 @@
         <appender-ref ref="RocketmqNamesrvAppender"/>
     </logger>
 
-    <logger name="RocketmqNamesrvConsole" additivity="false">
+    <logger name="RocketmqNamesrvConsole" additivity="true">
         <level value="INFO"/>
         <appender-ref ref="STDOUT"/>
     </logger>
@@ -119,7 +119,7 @@
     </logger>
 
     <root>
-        <level value="INFO"/>
-        <appender-ref ref="DefaultAppender"/>
+        <level value="DEBUG"/>
+        <appender-ref ref="STDOUT"/>
     </root>
 </configuration>

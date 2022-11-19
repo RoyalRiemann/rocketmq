@@ -359,6 +359,9 @@ public class DefaultMQPushConsumerTest {
         });
         consumer.setNamesrvAddr("127.0.0.1:9876");
         consumer.start();
+        consumer.subscribe("defaultTest","*");
         consumer.shutdown();
+
+        //消费者为什么只会消费一个topic的内容,这个值得深思
     }
 }

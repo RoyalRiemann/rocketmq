@@ -54,6 +54,8 @@ public class Consumer {
 
         consumer.setNamespace("127.0.0.1:9876");
 
+        consumer.setNamespace("127.0.0.1:9876");
+
         /*
          * Specify where to start in case the specific consumer group is a brand-new one.
          */

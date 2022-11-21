@@ -328,6 +328,7 @@ public class DefaultRequestProcessor implements NettyRequestProcessor {
         return true;
     }
 
+    //查询brokerLiveInfo 有响应就更新时间戳
     public RemotingCommand queryBrokerTopicConfig(ChannelHandlerContext ctx,
         RemotingCommand request) throws RemotingCommandException {
         final RemotingCommand response = RemotingCommand.createResponseCommand(QueryDataVersionResponseHeader.class);

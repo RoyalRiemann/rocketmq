@@ -48,6 +48,7 @@ public class BrokerConfig extends BrokerIdentity {
     @ImportantField
     private boolean recoverConcurrently = false;
 
+    //read & write
     private int brokerPermission = PermName.PERM_READ | PermName.PERM_WRITE;
     private int defaultTopicQueueNums = 8;
     @ImportantField

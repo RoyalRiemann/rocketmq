@@ -244,8 +244,8 @@ public class BrokerController {
     protected BrokerFastFailure brokerFastFailure;
     private Configuration configuration;
     protected TopicQueueMappingCleanService topicQueueMappingCleanService;
-    protected FileWatchService fileWatchService;
-    protected TransactionalMessageCheckService transactionalMessageCheckService;
+    protected FileWatchService fileWatchService;//broker的快速失败策略，主要针对系统的请求，开启开功能及时清理过期的请求，避免请求堆积
+    protected TransactionalMessageCheckService transactionalMessageCheckService; //针对事物消息的验证服务
     protected TransactionalMessageService transactionalMessageService;
     protected AbstractTransactionalMessageCheckListener transactionalMessageCheckListener;
     protected Map<Class, AccessValidator> accessValidatorMap = new HashMap<>();
@@ -291,18 +291,25 @@ public class BrokerController {
         final NettyClientConfig nettyClientConfig,
         final MessageStoreConfig messageStoreConfig
     ) {
-        this.brokerConfig = brokerConfig;
-        this.nettyServerConfig = nettyServerConfig;
-        this.nettyClientConfig = nettyClientConfig;
-        this.messageStoreConfig = messageStoreConfig;
+        //配置类
+        this.brokerConfig = brokerConfig;//整个broker的配置
+        this.nettyServerConfig = nettyServerConfig;//broker作为服务端启动
+        this.nettyClientConfig = nettyClientConfig;//broker作为客户端启动
+        this.messageStoreConfig = messageStoreConfig;//消息存储的核心配置
+
         this.setStoreHost(new InetSocketAddress(this.getBrokerConfig().getBrokerIP1(), getListenPort()));
+        //broker的各种操作预警机制，主要有记录操作数量
         this.brokerStatsManager = messageStoreConfig.isEnableLmq() ? new LmqBrokerStatsManager(this.brokerConfig.getBrokerClusterName(), this.brokerConfig.isEnableDetailStat()) : new BrokerStatsManager(this.brokerConfig.getBrokerClusterName(), this.brokerConfig.isEnableDetailStat());
+        //consumer端的消费offset的集中管理,主要的关系就是topic，group，queueid，offset
         this.consumerOffsetManager = messageStoreConfig.isEnableLmq() ? new LmqConsumerOffsetManager(this) : new ConsumerOffsetManager(this);
         this.broadcastOffsetManager = new BroadcastOffsetManager(this);
+        //topic的配置管理，主要提供根据topic获得对应的topic的配置信息，涉及读写队列数量、操作权限等
         this.topicConfigManager = messageStoreConfig.isEnableLmq() ? new LmqTopicConfigManager(this) : new TopicConfigManager(this);
         this.topicQueueMappingManager = new TopicQueueMappingManager(this);
+        //针对consumer的请求拉取消息的事件处理，基于netty框架，解析并执行内部业务功能，最后将数据返回
         this.pullMessageProcessor = new PullMessageProcessor(this);
         this.peekMessageProcessor = new PeekMessageProcessor(this);
+        //针对客户端请求的服务保持，是java的Thread模式，主要是监听消息有新的时候通知客户端执行拉取操作
         this.pullRequestHoldService = messageStoreConfig.isEnableLmq() ? new LmqPullRequestHoldService(this) : new PullRequestHoldService(this);
         this.popMessageProcessor = new PopMessageProcessor(this);
         this.notificationProcessor = new NotificationProcessor(this);
@@ -311,28 +318,37 @@ public class BrokerController {
         this.changeInvisibleTimeProcessor = new ChangeInvisibleTimeProcessor(this);
         this.sendMessageProcessor = new SendMessageProcessor(this);
         this.replyMessageProcessor = new ReplyMessageProcessor(this);
+        //新消息到达的监听服务，联合PullRequestHostService进行消息到达的通知功能
         this.messageArrivingListener = new NotifyMessageArrivingListener(this.pullRequestHoldService, this.popMessageProcessor, this.notificationProcessor);
         this.consumerIdsChangeListener = new DefaultConsumerIdsChangeListener(this);
+        //consumer的管理和维护，提供consumer的注册，取消，关闭等，主要的关系是group，consumerBroupInfo
         this.consumerManager = new ConsumerManager(this.consumerIdsChangeListener, this.brokerStatsManager);
+        //producer的管理和维护，提供producer的注册，取消，关闭等，主要关系是group，channel，ClientChannelInfo
         this.producerManager = new ProducerManager(this.brokerStatsManager);
+        //consumer的过滤管理，针对consumer端的消息过滤，主要关系是topic，consumer，expression
         this.consumerFilterManager = new ConsumerFilterManager(this);
         this.consumerOrderInfoManager = new ConsumerOrderInfoManager(this);
+        //基于netty的框架实现，主要监听客户端的网络操作，网络的链接、关闭、异常、空闲等事件操作
         this.clientHousekeepingService = new ClientHousekeepingService(this);
+        //broker对请求处理的封装类，处理对应的操作，主要有通知，重置，转换，状态等
         this.broker2Client = new Broker2Client(this);
         this.subscriptionGroupManager = messageStoreConfig.isEnableLmq() ? new LmqSubscriptionGroupManager(this) : new SubscriptionGroupManager(this);
         this.scheduleMessageService = new ScheduleMessageService(this);
-
+        //作为客户端的配置
         if (nettyClientConfig != null) {
+            //broker请求外部的封装，主要是通过netty的底层通信完成和namesrv的交互
             this.brokerOuterAPI = new BrokerOuterAPI(nettyClientConfig);
         }
-
+        //基于shell的服务端过滤管理
         this.filterServerManager = new FilterServerManager(this);
 
         this.queryAssignmentProcessor = new QueryAssignmentProcessor(this);
         this.clientManageProcessor = new ClientManageProcessor(this);
+        //salve的同步操作，如果broker是slave角色，执行同步操作，主要同步元数据信息
         this.slaveSynchronize = new SlaveSynchronize(this);
         this.endTransactionProcessor = new EndTransactionProcessor(this);
 
+        //BlockingQueue各种队列，主要是处理发送，拉取，查询等操作，内部是多线程队列机制提高并发处理 --START
         this.sendThreadPoolQueue = new LinkedBlockingQueue<>(this.brokerConfig.getSendThreadPoolQueueCapacity());
         this.putThreadPoolQueue = new LinkedBlockingQueue<>(this.brokerConfig.getPutThreadPoolQueueCapacity());
         this.pullThreadPoolQueue = new LinkedBlockingQueue<>(this.brokerConfig.getPullThreadPoolQueueCapacity());
@@ -347,7 +363,9 @@ public class BrokerController {
         this.endTransactionThreadPoolQueue = new LinkedBlockingQueue<>(this.brokerConfig.getEndTransactionPoolQueueCapacity());
         this.adminBrokerThreadPoolQueue = new LinkedBlockingQueue<>(this.brokerConfig.getAdminBrokerThreadPoolQueueCapacity());
         this.loadBalanceThreadPoolQueue = new LinkedBlockingQueue<>(this.brokerConfig.getLoadBalanceThreadPoolQueueCapacity());
+        //BlockingQueue各种队列，主要是处理发送，拉取，查询等操作，内部是多线程队列机制提高并发处理 --end
 
+        //broker的快速失败策略，主要针对系统的请求，开启开功能及时清理过期的请求，避免请求堆积
         this.brokerFastFailure = new BrokerFastFailure(this);
 
         String brokerConfigPath;
@@ -738,6 +756,7 @@ public class BrokerController {
 
         if (result) {
             try {
+                //MessageStore 消息的存储功能，核心及高性能的消息存储
                 DefaultMessageStore defaultMessageStore = new DefaultMessageStore(this.messageStoreConfig, this.brokerStatsManager, this.messageArrivingListener, this.brokerConfig);
                 defaultMessageStore.setTopicConfigTable(topicConfigManager.getTopicConfigTable());
 

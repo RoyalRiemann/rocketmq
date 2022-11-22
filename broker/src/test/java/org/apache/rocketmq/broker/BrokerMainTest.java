@@ -22,11 +22,12 @@ public class BrokerMainTest {
 
         BrokerConfig brokerConfig = new BrokerConfig();
         brokerConfig.setBrokerId(0L);
-        brokerConfig.setBrokerName("default-broker-a");
-        brokerConfig.setBrokerClusterName("default-cluster-name-a");
+        brokerConfig.setBrokerName("broker-a");
+        brokerConfig.setBrokerClusterName("default-cluster-a");
+        brokerConfig.setNamesrvAddr("127.0.0.1:9876");
 
         NettyServerConfig nettyServerConfig = new NettyServerConfig();
-        nettyServerConfig.setListenPort(9876);
+        nettyServerConfig.setListenPort(10911);
 
         BrokerController brokerController = new BrokerController(brokerConfig, nettyServerConfig, new NettyClientConfig(), messageStoreConfig);
         brokerController.initialize();

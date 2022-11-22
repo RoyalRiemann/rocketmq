@@ -149,6 +149,7 @@ public class TopicConfigManager extends ConfigManager {
             }
         }
         {
+            //重试消息
             String topic = this.brokerController.getBrokerConfig().getBrokerClusterName() + "_" + MixAll.REPLY_TOPIC_POSTFIX;
             TopicConfig topicConfig = new TopicConfig(topic);
             TopicValidator.addSystemTopic(topic);
@@ -157,7 +158,7 @@ public class TopicConfigManager extends ConfigManager {
             this.topicConfigTable.put(topicConfig.getTopicName(), topicConfig);
         }
         {
-            // PopAckConstants.REVIVE_TOPIC
+            // PopAckConstants.REVIVE_TOPIC:rmq_sys_REVIVE_LOG_${clusterName} 恢复队列
             String topic = PopAckConstants.buildClusterReviveTopic(this.brokerController.getBrokerConfig().getBrokerClusterName());
             TopicConfig topicConfig = new TopicConfig(topic);
             TopicValidator.addSystemTopic(topic);
@@ -166,7 +167,7 @@ public class TopicConfigManager extends ConfigManager {
             this.topicConfigTable.put(topicConfig.getTopicName(), topicConfig);
         }
         {
-            // sync broker member group topic
+            // sync broker member group topic brokerName:  rmq_sys_SYNC_BROKER_MEMBER_${brokerName}
             String topic = TopicValidator.SYNC_BROKER_MEMBER_GROUP_PREFIX + this.brokerController.getBrokerConfig().getBrokerName();
             TopicConfig topicConfig = new TopicConfig(topic);
             TopicValidator.addSystemTopic(topic);

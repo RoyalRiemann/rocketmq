@@ -54,16 +54,16 @@ public class BrokerConfig extends BrokerIdentity {
     @ImportantField
     private boolean autoCreateTopicEnable = true;
 
-    private boolean clusterTopicEnable = true;
+    private boolean clusterTopicEnable = true;//集群名作为系统topic时,如果这个参数为true,则权限增加wr
 
-    private boolean brokerTopicEnable = true;
+    private boolean brokerTopicEnable = true;//brokerName作为topic时,参数为true,权限增加wr
     @ImportantField
-    private boolean autoCreateSubscriptionGroup = true;
+    private boolean autoCreateSubscriptionGroup = true;//查询消费组时使用
     private String messageStorePlugIn = "";
 
     private static final int PROCESSOR_NUMBER = Runtime.getRuntime().availableProcessors();
     @ImportantField
-    private String msgTraceTopicName = TopicValidator.RMQ_SYS_TRACE_TOPIC;
+    private String msgTraceTopicName = TopicValidator.RMQ_SYS_TRACE_TOPIC;//Trace Topic
     @ImportantField
     private boolean traceTopicEnable = false;//跟踪日志的topic,如果不启动不打印跟踪日志
     /**
@@ -90,19 +90,25 @@ public class BrokerConfig extends BrokerIdentity {
     private int endTransactionThreadPoolNums = Math.max(8 + PROCESSOR_NUMBER * 2,
             sendMessageThreadPoolNums * 4);
 
+    //持久化消息消费进度 consumerOffse.json文件的频率ms
     private int flushConsumerOffsetInterval = 1000 * 5;
 
+    //fushConsumeQueueLeastPages直接刷盘,do nothing
     private int flushConsumerOffsetHistoryInterval = 1000 * 60;
 
+    //在发送事务消息的half消息时,如果这个判断为真,则拒绝发送消息
     @ImportantField
     private boolean rejectTransactionMessage = false;
 
+    //解析NDS完成namesrv更新
     @ImportantField
     private boolean fetchNameSrvAddrByDnsLookup = false;
 
+    //解析jmenv.tbsite.net地址获取namesrv
     @ImportantField
     private boolean fetchNamesrvAddrByAddressServer = false;
 
+    //各种队列容量
     private int sendThreadPoolQueueCapacity = 10000;
     private int putThreadPoolQueueCapacity = 10000;
     private int pullThreadPoolQueueCapacity = 100000;
@@ -117,30 +123,38 @@ public class BrokerConfig extends BrokerIdentity {
     private int adminBrokerThreadPoolQueueCapacity = 10000;
     private int loadBalanceThreadPoolQueueCapacity = 100000;
 
+    //TODO ... FilterServer 注册剖析
     private int filterServerNums = 0;
 
     //长轮询
     private boolean longPollingEnable = true;
 
+    //短轮询
     private long shortPollingTimeMills = 1000;
 
+    //通知消费者ID已改
     private boolean notifyConsumerIdsChangedEnable = true;
 
+    //TODO ...好像没用到
     private boolean highSpeedMode = false;
 
     private int commercialBaseCount = 1;
 
     private int commercialSizePerMsg = 4 * 1024;
 
+    //和状态监控有关系
     private boolean accountStatsEnable = true;
     private boolean accountStatsPrintZeroValues = true;
 
+    //消息传输是否使用堆内存
     private boolean transferMsgByHeap = true;
     private int maxDelayTime = 40;
 
     private String regionId = MixAll.DEFAULT_TRACE_REGION_ID;
+    //注册broker超时时间
     private int registerBrokerTimeoutMills = 24000;
 
+    //心跳发送超时
     private int sendHeartbeatTimeoutMillis = 1000;
 
     //slave读属性
@@ -148,8 +162,9 @@ public class BrokerConfig extends BrokerIdentity {
 
     //如果消费者读的比较慢,是否将次消费置为不可用
     private boolean disableConsumeIfConsumerReadSlowly = false;
+    //消息消费堆积阈值默认16GB,disableConsumeIfConsumerReadSlowly为true时生效
     private long consumerFallbehindThreshold = 1024L * 1024 * 1024 * 16;
-
+    //broker是否支持快速失败
     private boolean brokerFastFailureEnable = true;
     private long waitTimeMillsInSendQueue = 200;
     private long waitTimeMillsInPullQueue = 5 * 1000;
@@ -157,7 +172,7 @@ public class BrokerConfig extends BrokerIdentity {
     private long waitTimeMillsInHeartbeatQueue = 31 * 1000;
     private long waitTimeMillsInTransactionQueue = 3 * 1000;
     private long waitTimeMillsInAckQueue = 3000;
-
+    //最小接受发送消息延时的时间
     private long startAcceptSendRequestTimeStamp = 0L;
 
     //好像这字段额外加了
@@ -185,35 +200,44 @@ public class BrokerConfig extends BrokerIdentity {
     private boolean filterSupportRetry = false;
     private boolean enablePropertyFilter = false;
 
+    //是否压缩注册
     private boolean compressedRegister = false;
 
+    //强制注册
     private boolean forceRegister = true;
 
     /**
      * This configurable item defines interval of topics registration of broker to name server. Allowing values are
      * between 10,000 and 60,000 milliseconds.
+     * 注册间隔
      */
     private int registerNameServerPeriod = 1000 * 30;
 
     /**
      * the interval to send heartbeat to name server for liveness detection.
+     * 心跳间隔
      */
     private int brokerHeartbeatInterval = 1000;
 
     /**
      * How long the broker will be considered as inactive by nameserver since last heartbeat. Effective only if
      * enableSlaveActingMaster is true
+     * 多少时间后broker被当作是坏的
      */
     private long brokerNotActiveTimeoutMillis = 10 * 1000;
 
+    //是否允许流控
     private boolean enableNetWorkFlowControl = false;
 
+    //能够广播
     private boolean enableBroadcastOffsetStore = true;
 
+    //广播过期
     private long broadcastOffsetExpireSecond = 2 * 60;
 
     private long broadcastOffsetExpireMaxSecond = 5 * 60;
 
+    //拉取大小
     private int popPollingSize = 1024;
     private int popPollingMapSize = 100000;
     // 20w cost 200M heap memory.
@@ -232,8 +256,10 @@ public class BrokerConfig extends BrokerIdentity {
     private int popCkOffsetMaxQueueSize = 20000;
     private boolean enableNotifyAfterPopOrderLockRelease = true;
 
+    //实时通知消费者改变,notifyConsumerIdsChangedEnable 和这个配合使用
     private boolean realTimeNotifyConsumerChange = true;
 
+    //轻消息
     private boolean litePullMessageEnable = true;
 
     // The period to sync broker member group from namesrv, default value is 1 second
@@ -241,16 +267,20 @@ public class BrokerConfig extends BrokerIdentity {
 
     /**
      * the interval of pulling topic information from the named server
+     * 拉取topicInfo信息的时间间隔
      */
     private long loadBalancePollNameServerInterval = 1000 * 30;
 
     /**
      * the interval of cleaning
+     * TODO ....
      */
     private int cleanOfflineBrokerInterval = 1000 * 30;
 
+    //服务端负载
     private boolean serverLoadBalancerEnable = true;
 
+    //消费模式
     private MessageRequestMode defaultMessageRequestMode = MessageRequestMode.PULL;
 
     private int defaultPopShareQueueNum = -1;
@@ -258,12 +288,14 @@ public class BrokerConfig extends BrokerIdentity {
     /**
      * The minimum time of the transactional message  to be checked firstly, one message only exceed this time interval
      * that can be checked.
+     * 事务消息至少要6s才会开始检查
      */
     @ImportantField
     private long transactionTimeOut = 6 * 1000;
 
     /**
      * The maximum number of times the message was checked, if exceed this value, this message will be discarded.
+     * 事务消息检查做多次数
      */
     @ImportantField
     private int transactionCheckMax = 15;
@@ -275,7 +307,7 @@ public class BrokerConfig extends BrokerIdentity {
     private long transactionCheckInterval = 60 * 1000;
 
     /**
-     * transaction batch op message
+     * transaction batch op message 4M
      */
     private int transactionOpMsgMaxSize = 4096;
 
@@ -287,6 +319,7 @@ public class BrokerConfig extends BrokerIdentity {
     @ImportantField
     private boolean aclEnable = false;
 
+    //存储响应消息
     private boolean storeReplyMessageEnable = true;
 
     private boolean enableDetailStat = true;
@@ -295,6 +328,7 @@ public class BrokerConfig extends BrokerIdentity {
 
     /**
      * Whether to distinguish log paths when multiple brokers are deployed on the same machine
+     * 多个代理部署在同一个机器上时是否要区分日志
      */
     private boolean isolateLogEnable = false;
 
@@ -304,6 +338,7 @@ public class BrokerConfig extends BrokerIdentity {
      * Slave will act master when failover. For example, if master down, timer or transaction message which is expire in slave will
      * put to master (master of the same process in broker container mode or other masters in cluster when enableFailoverRemotingActing is true)
      * when enableSlaveActingMaster is true
+     * 是否能主备转换
      */
     private boolean enableSlaveActingMaster = false;
 
@@ -311,6 +346,7 @@ public class BrokerConfig extends BrokerIdentity {
 
     private boolean skipPreOnline = false;
 
+    //异步发送消息
     private boolean asyncSendEnable = true;
 
     private boolean useServerSideResetOffset = false;

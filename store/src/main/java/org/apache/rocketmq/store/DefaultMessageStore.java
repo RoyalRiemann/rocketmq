@@ -1661,8 +1661,8 @@ public class DefaultMessageStore implements MessageStore {
     }
 
     private void recover(final boolean lastExitOK) {
-        boolean recoverConcurrently = this.brokerConfig.isRecoverConcurrently();
-        LOGGER.info("message store recover mode: {}", recoverConcurrently ? "concurrent" : "normal");
+//        boolean recoverConcurrently = this.brokerConfig.isRecoverConcurrently();
+//        LOGGER.info("message store recover mode: {}", recoverConcurrently ? "concurrent" : "normal");
 
         // recover consume queue
         long recoverConsumeQueueStart = System.currentTimeMillis();
